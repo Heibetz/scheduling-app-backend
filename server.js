@@ -3,7 +3,6 @@ import routes from "./app/routes/index.js";
 import express, { json, urlencoded } from "express"
 import cors from "cors";
 import morgan from "morgan";
-
 import db  from "./app/models/index.js";
 import logger from "./app/config/logger.js";
 
@@ -32,7 +31,7 @@ app.use("/workerscheduling-t5", routes);
 
 
 // set port, listen for requests
-const PORT = process.env.PORT || 3100;
+const PORT = process.env.PORT || 3135;
 if (process.env.NODE_ENV !== "test") {
   app.listen(PORT, () => {
     logger.info(`Server is running on port ${PORT}`);
