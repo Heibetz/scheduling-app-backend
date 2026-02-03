@@ -91,13 +91,13 @@ exports.login = async (req, res) => {
     });
 
   // this lets us get the user id
-  if (user.id === undefined) {
+  if (user.user_id === undefined) {
     logger.info(`Creating new user: ${user.email}`);
     
     await User.create(user)
       .then((data) => {
         user = data.dataValues;
-        logger.info(`User registered successfully: ${user.id} - ${user.email}`);
+        logger.info(`User registered successfully: ${user.user_id} - ${user.email}`);
       })
       .catch((err) => {
         logger.error(`Error creating user: ${err.message}`);
@@ -110,16 +110,16 @@ exports.login = async (req, res) => {
     user.fName = firstName;
     user.lName = lastName;
   
-    await User.update(user, { where: { id: user.id } })
+    await User.update(user, { where: { user_id: user.user_id } })
       .then((num) => {
         if (num == 1) {
-          logger.info(`Updated user name: ${user.id}`);
+          logger.info(`Updated user name: ${user.user_id}`);
         } else {
-          logger.warn(`Cannot update user with id=${user.id}. User not found or empty body`);
+          logger.warn(`Cannot update user with id=${user.user_id}. User not found or empty body`);
         }
       })
       .catch((err) => {
-        logger.error(`Error updating user ${user.id}: ${err.message}`);
+        logger.error(`Error updating user ${user.user_id}: ${err.message}`);
       });
   }
 
@@ -166,7 +166,7 @@ exports.login = async (req, res) => {
             email: user.email,
             fName: user.fName,
             lName: user.lName,
-            userId: user.id,
+            userId: user.user_id,
             token: session.token,
             // refresh_token: user.refresh_token,
             // expiration_date: user.expiration_date
@@ -197,7 +197,7 @@ exports.login = async (req, res) => {
     const newSession = {
       token: token,
       email: email,
-      userId: user.id,
+      userId: user.user_id,
       expirationDate: tempExpirationDate,
     };
 
@@ -209,7 +209,7 @@ exports.login = async (req, res) => {
           email: user.email,
           fName: user.fName,
           lName: user.lName,
-          userId: user.id,
+          userId: user.user_id,
           token: token,
           // refresh_token: user.refresh_token,
           // expiration_date: user.expiration_date
@@ -243,7 +243,7 @@ exports.authorize = async (req, res) => {
 
   await User.findOne({
     where: {
-      id: req.params.id,
+      user_id: req.params.id,
     },
   })
     .then((data) => {
@@ -265,7 +265,7 @@ exports.authorize = async (req, res) => {
     });
 
   // Check if user was found before continuing
-  if (!user.id) {
+  if (!user.user_id) {
     return; // User not found, response already sent
   }
   
@@ -274,12 +274,12 @@ exports.authorize = async (req, res) => {
   tempExpirationDate.setDate(tempExpirationDate.getDate() + 100);
   user.expiration_date = tempExpirationDate;
 
-  await User.update(user, { where: { id: user.id } })
+  await User.update(user, { where: { user_id: user.user_id } })
     .then((num) => {
       if (num == 1) {
-        logger.info(`Updated Google OAuth tokens for user: ${user.id}`);
+        logger.info(`Updated Google OAuth tokens for user: ${user.user_id}`);
       } else {
-        logger.warn(`Cannot update user ${user.id}. User not found or empty body`);
+        logger.warn(`Cannot update user ${user.user_id}. User not found or empty body`);
       }
       let userInfo = {
         refresh_token: user.refresh_token,

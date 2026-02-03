@@ -20,28 +20,26 @@ db.tutorial = Tutorial;
 db.lesson = Lesson;
 
 // foreign key for session
-db.user.hasMany(
-  db.session,
-  { as: "session" },
-  { foreignKey: { allowNull: false }, onDelete: "CASCADE" }
-);
-db.session.belongsTo(
-  db.user,
-  { as: "user" },
-  { foreignKey: { allowNull: false }, onDelete: "CASCADE" }
-);
+db.user.hasMany(db.session, { 
+  as: "session",
+  foreignKey: "userId",
+  onDelete: "CASCADE"
+});
+db.session.belongsTo(db.user, { 
+  as: "user",
+  foreignKey: "userId"
+});
 
 // foreign key for tutorials
-db.user.hasMany(
-  db.tutorial,
-  { as: "tutorial" },
-  { foreignKey: { allowNull: false }, onDelete: "CASCADE" }
-);
-db.tutorial.belongsTo(
-  db.user,
-  { as: "user" },
-  { foreignKey: { allowNull: false }, onDelete: "CASCADE" }
-);
+db.user.hasMany(db.tutorial, { 
+  as: "tutorial",
+  foreignKey: "userId",
+  onDelete: "CASCADE"
+});
+db.tutorial.belongsTo(db.user, { 
+  as: "user",
+  foreignKey: "userId"
+});
 
 // foreign key for lessons
 db.tutorial.hasMany(

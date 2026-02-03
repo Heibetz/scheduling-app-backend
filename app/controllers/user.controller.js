@@ -17,7 +17,7 @@ exports.create = (req, res) => {
 
   // Create a User
   const user = {
-    id: req.body.id,
+    user_id: req.body.user_id,
     fName: req.body.fName,
     lName: req.body.lName,
     email: req.body.email,
@@ -30,7 +30,7 @@ exports.create = (req, res) => {
   // Save User in the database
   User.create(user)
     .then((data) => {
-      logger.info(`User created successfully: ${data.id} - ${data.email}`);
+      logger.info(`User created successfully: ${data.user_id} - ${data.email}`);
       res.send(data);
     })
     .catch((err) => {
@@ -44,7 +44,7 @@ exports.create = (req, res) => {
 // Retrieve all People from the database.
 exports.findAll = (req, res) => {
   const id = req.query.id;
-  var condition = id ? { id: { [Op.like]: `%${id}%` } } : null;
+  var condition = id ? { user_id: { [Op.like]: `%${id}%` } } : null;
 
   logger.debug(`Fetching all users with condition: ${JSON.stringify(condition)}`);
 
@@ -125,7 +125,7 @@ exports.update = (req, res) => {
   logger.debug(`Updating user ${id} with data: ${JSON.stringify(req.body)}`);
 
   User.update(req.body, {
-    where: { id: id },
+    where: { user_id: id },
   })
     .then((num) => {
       if (num == 1) {
@@ -155,7 +155,7 @@ exports.delete = (req, res) => {
   logger.debug(`Attempting to delete user: ${id}`);
 
   User.destroy({
-    where: { id: id },
+    where: { user_id: id },
   })
     .then((num) => {
       if (num == 1) {
