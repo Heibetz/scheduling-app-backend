@@ -8,7 +8,8 @@ import User from "./user.model.js";
 import Session from "./session.model.js";
 import Tutorial from "./tutorial.model.js";
 import Lesson from "./lesson.model.js"; 
-
+import Position from "./position.model.js";
+import PositionUser from "./position_user.model.js";
 
 const db = {};
 db.Sequelize = Sequelize;
@@ -18,27 +19,29 @@ db.user = User;
 db.session = Session;
 db.tutorial = Tutorial;
 db.lesson = Lesson;
+db.position = Position;
+db.positionUser = PositionUser;
 
 // foreign key for session
 db.user.hasMany(db.session, { 
   as: "session",
-  foreignKey: "userId",
+  foreignKey: "user_id",
   onDelete: "CASCADE"
 });
 db.session.belongsTo(db.user, { 
   as: "user",
-  foreignKey: "userId"
+  foreignKey: "user_id"
 });
 
 // foreign key for tutorials
 db.user.hasMany(db.tutorial, { 
   as: "tutorial",
-  foreignKey: "userId",
+  foreignKey: "user_id",
   onDelete: "CASCADE"
 });
 db.tutorial.belongsTo(db.user, { 
   as: "user",
-  foreignKey: "userId"
+  foreignKey: "user_id"
 });
 
 // foreign key for lessons
