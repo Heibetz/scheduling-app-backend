@@ -3,8 +3,6 @@ import { Router } from "express";
 
 import AuthRoutes from "./auth.routes.js";
 import UserRoutes from "./user.routes.js";
-import TutorialRoutes from "./tutorial.routes.js";
-import LessonRoutes from "./lesson.routes.js";
 import AvailabilityRoutes from "./availability.routes.js";
 import PositionRoutes from "./position.routes.js";
 import PositionUserRoutes from "./position_user.routes.js";
