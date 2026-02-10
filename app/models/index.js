@@ -9,6 +9,7 @@ import Session from "./session.model.js";
 import Tutorial from "./tutorial.model.js";
 import Lesson from "./lesson.model.js";
 import Area from "./area.model.js"; 
+import Notification from "./notification.model.js";
 
 
 const db = {};
@@ -20,6 +21,7 @@ db.session = Session;
 db.tutorial = Tutorial;
 db.lesson = Lesson;
 db.area = Area;
+db.notification = Notification;
 
 // foreign key for session
 db.user.hasMany(db.session, { 
@@ -42,6 +44,10 @@ db.tutorial.belongsTo(db.user, {
   as: "user",
   foreignKey: "userId"
 });
+
+// notifications are intentionally not linked with a DB-level foreign key
+// to avoid foreign-key formation issues across different DB schemas.
+// Associations can be handled at the application layer when needed.
 
 // foreign key for lessons
 db.tutorial.hasMany(
