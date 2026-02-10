@@ -10,7 +10,6 @@ import Tutorial from "./tutorial.model.js";
 import Lesson from "./lesson.model.js"; 
 import Position from "./position.model.js";
 import PositionUser from "./position_user.model.js";
-import Lesson from "./lesson.model.js";
 import Area from "./area.model.js"; 
 
 
