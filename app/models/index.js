@@ -7,7 +7,7 @@ import sequelize from "../config/sequelizeInstance.js";
 import User from "./user.model.js";
 import Session from "./session.model.js";
 import Tutorial from "./tutorial.model.js";
-import Lesson from "./lesson.model.js"; 
+import Availability from "./availability.model.js"; 
 import Position from "./position.model.js";
 import PositionUser from "./position_user.model.js";
 import Area from "./area.model.js"; 
@@ -20,10 +20,7 @@ db.sequelize = sequelize;
 db.user = User;
 db.session = Session;
 db.tutorial = Tutorial;
-db.lesson = Lesson;
-db.position = Position;
-db.positionUser = PositionUser;
-db.area = Area;
+db.availability = Availability;
 
 // foreign key for session
 db.user.hasMany(db.session, { 
@@ -58,5 +55,16 @@ db.lesson.belongsTo(
   { as: "tutorial" },
   { foreignKey: { allowNull: false }, onDelete: "CASCADE" }
 );
+
+// foreign key for availability
+db.user.hasMany(db.availability, { 
+  as: "availability",
+  foreignKey: "user_id",
+  onDelete: "CASCADE"
+});
+db.availability.belongsTo(db.user, { 
+  as: "user",
+  foreignKey: "user_id"
+});
 
 export default db;
