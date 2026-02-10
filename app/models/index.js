@@ -8,8 +8,8 @@ import User from "./user.model.js";
 import Session from "./session.model.js";
 import Tutorial from "./tutorial.model.js";
 import Lesson from "./lesson.model.js";
-import TaskList from "./taskList.model.js"; 
-
+import Area from "./area.model.js";
+import TaskList from "./taskList.model.js";
 
 const db = {};
 db.Sequelize = Sequelize;
@@ -19,7 +19,12 @@ db.user = User;
 db.session = Session;
 db.tutorial = Tutorial;
 db.lesson = Lesson;
+db.area = Area;
 db.taskList = TaskList;
+
+// TaskList belongs to Area (area_id)
+db.area.hasMany(db.taskList, { as: "taskLists", foreignKey: "area_id", onDelete: "CASCADE" });
+db.taskList.belongsTo(db.area, { as: "area", foreignKey: "area_id" });
 
 // foreign key for session
 db.user.hasMany(db.session, { 
