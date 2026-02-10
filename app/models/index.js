@@ -10,6 +10,9 @@ import Tutorial from "./tutorial.model.js";
 import Lesson from "./lesson.model.js"; 
 import Position from "./position.model.js";
 import PositionUser from "./position_user.model.js";
+import Lesson from "./lesson.model.js";
+import Area from "./area.model.js"; 
+
 
 const db = {};
 db.Sequelize = Sequelize;
@@ -21,6 +24,7 @@ db.tutorial = Tutorial;
 db.lesson = Lesson;
 db.position = Position;
 db.positionUser = PositionUser;
+db.area = Area;
 
 // foreign key for session
 db.user.hasMany(db.session, { 
