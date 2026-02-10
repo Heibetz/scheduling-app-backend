@@ -4,7 +4,7 @@ import SequelizeInstance from "../config/sequelizeInstance.js";
 /**
  * TaskList model definition
  * Represents task lists (duties) that can be assigned to shifts
- * Associations: belongsTo Area, hasMany TaskListItem, belongsToMany Shift (when those models exist)
+ * Associations: belongsTo Area (in index.js). TaskListItem/Shift in separate stories.
  */
 const TaskList = SequelizeInstance.define("taskList", {
   task_id: {

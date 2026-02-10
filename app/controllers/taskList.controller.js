@@ -2,6 +2,7 @@ import db from "../models/index.js";
 import logger from "../config/logger.js";
 
 const TaskList = db.taskList;
+const Area = db.area;
 const Op = db.Sequelize.Op;
 const exports = {};
 
@@ -92,7 +93,9 @@ exports.findOne = (req, res) => {
 
   logger.debug(`Finding taskList with id: ${id}`);
 
-  TaskList.findByPk(id)
+  TaskList.findByPk(id, {
+    include: [{ model: Area, as: "area", attributes: ["area_id", "area_code", "area_name"] }],
+  })
     .then((data) => {
       if (data) {
         logger.info(`TaskList found: ${id}`);
