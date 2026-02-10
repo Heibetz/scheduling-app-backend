@@ -1,7 +1,7 @@
 import db from "../models/index.js";
 import logger from "../config/logger.js";
 
-const Position = db.Position;
+const Position = db.position;
 const exports = {};
 
 // Create and Save a new Position
