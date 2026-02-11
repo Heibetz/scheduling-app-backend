@@ -6,6 +6,9 @@ import sequelize from "../config/sequelizeInstance.js";
 
 import User from "./user.model.js";
 import Session from "./session.model.js";
+import Tutorial from "./tutorial.model.js";
+import Lesson from "./lesson.model.js";
+import Shift from "./shift.model.js"; 
 import Availability from "./availability.model.js"; 
 import Position from "./position.model.js";
 import PositionUser from "./position_user.model.js";
@@ -19,6 +22,7 @@ db.sequelize = sequelize;
 db.user = User;
 db.session = Session;
 db.availability = Availability;
+db.shift = Shift;
 db.position = Position;
 db.positionUser = PositionUser;
 db.area = Area;
@@ -43,6 +47,39 @@ db.user.hasMany(db.availability, {
 db.availability.belongsTo(db.user, { 
   as: "user",
   foreignKey: "user_id"
+});
+
+// foreign key for shift - assigned user
+db.user.hasMany(db.shift, { 
+  as: "shifts",
+  foreignKey: "user_id",
+  onDelete: "SET NULL"
+});
+db.shift.belongsTo(db.user, { 
+  as: "user",
+  foreignKey: "user_id"
+});
+
+// foreign key for shift - assigned by user
+db.user.hasMany(db.shift, { 
+  as: "shiftsAssignedBy",
+  foreignKey: "assigned_by",
+  onDelete: "SET NULL"
+});
+db.shift.belongsTo(db.user, { 
+  as: "assignedByUser",
+  foreignKey: "assigned_by"
+});
+
+// foreign key for shift - created by user
+db.user.hasMany(db.shift, { 
+  as: "shiftsCreatedBy",
+  foreignKey: "created_by",
+  onDelete: "CASCADE"
+});
+db.shift.belongsTo(db.user, { 
+  as: "createdByUser",
+  foreignKey: "created_by"
 });
 
 export default db;
