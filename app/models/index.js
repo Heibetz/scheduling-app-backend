@@ -6,14 +6,15 @@ import sequelize from "../config/sequelizeInstance.js";
 
 import User from "./user.model.js";
 import Session from "./session.model.js";
-import Tutorial from "./tutorial.model.js";
-import Lesson from "./lesson.model.js";
+// import Tutorial from "./tutorial.model.js";
+// import Lesson from "./lesson.model.js";
 import Shift from "./shift.model.js"; 
 import Availability from "./availability.model.js"; 
 import Position from "./position.model.js";
 import PositionUser from "./position_user.model.js";
 import Area from "./area.model.js"; 
 import TaskList from "./taskList.model.js";
+import TaskListItem from "./taskListItem.model.js";
 
 const db = {};
 db.Sequelize = Sequelize;
@@ -27,10 +28,15 @@ db.position = Position;
 db.positionUser = PositionUser;
 db.area = Area;
 db.taskList = TaskList;
+db.taskListItem = TaskListItem;
 
 // TaskList belongs to Area (area_id)
 db.area.hasMany(db.taskList, { as: "taskLists", foreignKey: "area_id", onDelete: "CASCADE" });
 db.taskList.belongsTo(db.area, { as: "area", foreignKey: "area_id" });
+
+// TaskListItem belongs to TaskList (AC2 - B-15702)
+db.taskList.hasMany(db.taskListItem, { as: "taskListItems", foreignKey: "task_id", onDelete: "CASCADE" });
+db.taskListItem.belongsTo(db.taskList, { as: "taskList", foreignKey: "task_id" });
 
 // foreign key for session
 db.user.hasMany(db.session, { 
