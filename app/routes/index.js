@@ -8,7 +8,7 @@ import ShiftRoutes from "./shift.routes.js";
 import PositionRoutes from "./position.routes.js";
 import PositionUserRoutes from "./position_user.routes.js";
 import AreaRoutes from "./area.routes.js";
-
+import TaskListRoutes from "./taskList.routes.js";
 
 const router = Router();
 
@@ -22,5 +22,6 @@ router.use("/tutorials", LessonRoutes);
 router.use("/positions", PositionRoutes);
 router.use("/position-users", PositionUserRoutes);
 router.use("/areas", AreaRoutes);
+router.use("/tasklists", TaskListRoutes);
 
 export default router;
