@@ -6,11 +6,16 @@ import sequelize from "../config/sequelizeInstance.js";
 
 import User from "./user.model.js";
 import Session from "./session.model.js";
-import Tutorial from "./tutorial.model.js";
-import Lesson from "./lesson.model.js";
+// import Tutorial from "./tutorial.model.js";
+// import Lesson from "./lesson.model.js";
+import Shift from "./shift.model.js"; 
+import Availability from "./availability.model.js"; 
+import Position from "./position.model.js";
+import PositionUser from "./position_user.model.js";
 import Area from "./area.model.js"; 
 import Notification from "./notification.model.js";
-
+import TaskList from "./taskList.model.js";
+import TaskListItem from "./taskListItem.model.js";
 
 const db = {};
 db.Sequelize = Sequelize;
@@ -18,29 +23,52 @@ db.sequelize = sequelize;
 
 db.user = User;
 db.session = Session;
-db.tutorial = Tutorial;
-db.lesson = Lesson;
+db.availability = Availability;
+db.shift = Shift;
+db.position = Position;
+db.positionUser = PositionUser;
 db.area = Area;
 db.notification = Notification;
+db.taskList = TaskList;
+db.taskListItem = TaskListItem;
+
+// TaskList belongs to Area (area_id)
+db.area.hasMany(db.taskList, { as: "taskLists", foreignKey: "area_id", onDelete: "CASCADE" });
+db.taskList.belongsTo(db.area, { as: "area", foreignKey: "area_id" });
+
+// TaskListItem belongs to TaskList (AC2 - B-15702)
+db.taskList.hasMany(db.taskListItem, { as: "taskListItems", foreignKey: "task_id", onDelete: "CASCADE" });
+db.taskListItem.belongsTo(db.taskList, { as: "taskList", foreignKey: "task_id" });
 
 // foreign key for session
 db.user.hasMany(db.session, { 
   as: "session",
-  foreignKey: "userId",
+  foreignKey: "user_id",
   onDelete: "CASCADE"
 });
 db.session.belongsTo(db.user, { 
   as: "user",
-  foreignKey: "userId"
+  foreignKey: "user_id"
 });
 
-// foreign key for tutorials
-db.user.hasMany(db.tutorial, { 
-  as: "tutorial",
-  foreignKey: "userId",
+// foreign key for availability
+db.user.hasMany(db.availability, { 
+  as: "availability",
+  foreignKey: "user_id",
   onDelete: "CASCADE"
 });
-db.tutorial.belongsTo(db.user, { 
+db.availability.belongsTo(db.user, { 
+  as: "user",
+  foreignKey: "user_id"
+});
+
+// foreign key for shift - assigned user
+db.user.hasMany(db.shift, { 
+  as: "shifts",
+  foreignKey: "user_id",
+  onDelete: "SET NULL"
+});
+db.shift.belongsTo(db.user, { 
   as: "user",
   foreignKey: "userId"
 });
