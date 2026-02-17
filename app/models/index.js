@@ -73,20 +73,4 @@ db.shift.belongsTo(db.user, {
   foreignKey: "userId"
 });
 
-// notifications are intentionally not linked with a DB-level foreign key
-// to avoid foreign-key formation issues across different DB schemas.
-// Associations can be handled at the application layer when needed.
-
-// foreign key for lessons
-db.tutorial.hasMany(
-  db.lesson,
-  { as: "lesson" },
-  { foreignKey: { allowNull: false }, onDelete: "CASCADE" }
-);
-db.lesson.belongsTo(
-  db.tutorial,
-  { as: "tutorial" },
-  { foreignKey: { allowNull: false }, onDelete: "CASCADE" }
-);
-
 export default db;
