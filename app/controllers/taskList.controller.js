@@ -4,6 +4,7 @@ import logger from "../config/logger.js";
 const TaskList = db.taskList;
 const Area = db.area;
 const Op = db.Sequelize.Op;
+const TaskListItem = db.taskListItem;
 const exports = {};
 
 /**
@@ -104,7 +105,7 @@ exports.findOne = (req, res) => {
     }
     
     if (includeList.includes('taskListItems')) {
-      includes.push({ model: db.taskListItem, as: "taskListItems" });
+      includes.push({ model: TaskListItem, as: "taskListItems" });
     }
   } else {
     // Default: include area if no include parameter specified

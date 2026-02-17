@@ -11,6 +11,7 @@ import AreaRoutes from "./area.routes.js";
 import NotificationRoutes from "./notification.routes.js";
 import TaskListRoutes from "./taskList.routes.js";
 import TaskListItemRoutes from "./taskListItem.routes.js";
+import TaskListItemStatusRoutes from "./taskListItemStatus.routes.js";
 
 const router = Router();
 
@@ -27,5 +28,6 @@ router.use("/areas", AreaRoutes);
 router.use("/notifications", NotificationRoutes);
 router.use("/tasklists", TaskListRoutes);
 router.use("/task-list-items", TaskListItemRoutes);
+router.use("/task-list-item-statuses", TaskListItemStatusRoutes);
 
 export default router;
