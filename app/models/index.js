@@ -13,6 +13,7 @@ import Availability from "./availability.model.js";
 import Position from "./position.model.js";
 import PositionUser from "./position_user.model.js";
 import Area from "./area.model.js"; 
+import Notification from "./notification.model.js";
 import TaskList from "./taskList.model.js";
 import TaskListItem from "./taskListItem.model.js";
 import TaskListItemStatus from "./taskListItemStatus.model.js";
@@ -28,6 +29,7 @@ db.shift = Shift;
 db.position = Position;
 db.positionUser = PositionUser;
 db.area = Area;
+db.notification = Notification;
 db.taskList = TaskList;
 db.taskListItem = TaskListItem;
 db.taskListItemStatus = TaskListItemStatus;
@@ -76,29 +78,23 @@ db.user.hasMany(db.shift, {
 });
 db.shift.belongsTo(db.user, { 
   as: "user",
-  foreignKey: "user_id"
+  foreignKey: "userId"
 });
 
-// foreign key for shift - assigned by user
-db.user.hasMany(db.shift, { 
-  as: "shiftsAssignedBy",
-  foreignKey: "assigned_by",
-  onDelete: "SET NULL"
-});
-db.shift.belongsTo(db.user, { 
-  as: "assignedByUser",
-  foreignKey: "assigned_by"
-});
+// notifications are intentionally not linked with a DB-level foreign key
+// to avoid foreign-key formation issues across different DB schemas.
+// Associations can be handled at the application layer when needed.
 
-// foreign key for shift - created by user
-db.user.hasMany(db.shift, { 
-  as: "shiftsCreatedBy",
-  foreignKey: "created_by",
-  onDelete: "CASCADE"
-});
-db.shift.belongsTo(db.user, { 
-  as: "createdByUser",
-  foreignKey: "created_by"
-});
+// foreign key for lessons
+db.tutorial.hasMany(
+  db.lesson,
+  { as: "lesson" },
+  { foreignKey: { allowNull: false }, onDelete: "CASCADE" }
+);
+db.lesson.belongsTo(
+  db.tutorial,
+  { as: "tutorial" },
+  { foreignKey: { allowNull: false }, onDelete: "CASCADE" }
+);
 
 export default db;
