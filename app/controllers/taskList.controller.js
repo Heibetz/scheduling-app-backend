@@ -93,8 +93,26 @@ exports.findOne = (req, res) => {
 
   logger.debug(`Finding taskList with id: ${id}`);
 
+  // Build includes array based on query parameter
+  const includes = [];
+  
+  if (req.query.include) {
+    const includeList = req.query.include.split(',');
+    
+    if (includeList.includes('area')) {
+      includes.push({ model: Area, as: "area", attributes: ["area_id", "area_code", "area_name"] });
+    }
+    
+    if (includeList.includes('taskListItems')) {
+      includes.push({ model: db.taskListItem, as: "taskListItems" });
+    }
+  } else {
+    // Default: include area if no include parameter specified
+    includes.push({ model: Area, as: "area", attributes: ["area_id", "area_code", "area_name"] });
+  }
+
   TaskList.findByPk(id, {
-    include: [{ model: Area, as: "area", attributes: ["area_id", "area_code", "area_name"] }],
+    include: includes,
   })
     .then((data) => {
       if (data) {
