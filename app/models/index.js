@@ -17,6 +17,7 @@ import Notification from "./notification.model.js";
 import TaskList from "./taskList.model.js";
 import TaskListItem from "./taskListItem.model.js";
 import TaskListItemStatus from "./taskListItemStatus.model.js";
+import ShiftTask from "./shiftTask.model.js";
 
 const db = {};
 db.Sequelize = Sequelize;
@@ -33,7 +34,7 @@ db.notification = Notification;
 db.taskList = TaskList;
 db.taskListItem = TaskListItem;
 db.taskListItemStatus = TaskListItemStatus;
-
+db.shiftTask = ShiftTask;
 // TaskList belongs to Area (area_id)
 db.area.hasMany(db.taskList, { as: "taskLists", foreignKey: "area_id", onDelete: "CASCADE" });
 db.taskList.belongsTo(db.area, { as: "area", foreignKey: "area_id" });
@@ -47,6 +48,12 @@ db.shift.hasMany(db.taskListItemStatus, { as: "taskListItemStatuses", foreignKey
 db.taskListItemStatus.belongsTo(db.shift, { as: "shift", foreignKey: "shift_id" });
 db.taskListItem.hasMany(db.taskListItemStatus, { as: "taskListItemStatuses", foreignKey: "task_list_item_id", onDelete: "CASCADE" });
 db.taskListItemStatus.belongsTo(db.taskListItem, { as: "taskListItem", foreignKey: "task_list_item_id" });
+
+// ShiftTask belongs to Shift and TaskList (B-15700)
+db.shift.hasMany(db.shiftTask, { as: "shiftTasks", foreignKey: "shift_id", onDelete: "CASCADE" });
+db.shiftTask.belongsTo(db.shift, { as: "shift", foreignKey: "shift_id" });
+db.taskList.hasMany(db.shiftTask, { as: "shiftTasks", foreignKey: "task_id", onDelete: "CASCADE" });
+db.shiftTask.belongsTo(db.taskList, { as: "taskList", foreignKey: "task_id" });
 
 // foreign key for session
 db.user.hasMany(db.session, { 
