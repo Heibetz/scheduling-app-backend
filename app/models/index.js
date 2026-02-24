@@ -12,7 +12,8 @@ import Shift from "./shift.model.js";
 import Availability from "./availability.model.js"; 
 import Position from "./position.model.js";
 import PositionUser from "./position_user.model.js";
-import Area from "./area.model.js"; 
+import Area from "./area.model.js";
+import Schedule from "./schedule.model.js"; 
 import Notification from "./notification.model.js";
 import TaskList from "./taskList.model.js";
 import TaskListItem from "./taskListItem.model.js";
@@ -29,6 +30,7 @@ db.shift = Shift;
 db.position = Position;
 db.positionUser = PositionUser;
 db.area = Area;
+db.schedule = Schedule;
 db.notification = Notification;
 db.taskList = TaskList;
 db.taskListItem = TaskListItem;
@@ -78,7 +80,18 @@ db.user.hasMany(db.shift, {
 });
 db.shift.belongsTo(db.user, { 
   as: "user",
-  foreignKey: "userId"
+  foreignKey: "user_id"
+});
+
+// foreign key for schedule - belongs to area
+db.area.hasMany(db.schedule, {
+  as: "schedules",
+  foreignKey: "area_id",
+  onDelete: "CASCADE"
+});
+db.schedule.belongsTo(db.area, {
+  as: "area",
+  foreignKey: "area_id"
 });
 
 export default db;
