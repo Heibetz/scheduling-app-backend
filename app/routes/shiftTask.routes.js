@@ -3,6 +3,7 @@ import authenticate from "../authorization/authorization.js";
 import { Router } from "express";
 const router = Router();
 
+
 // Create a new ShiftTask
 router.post("/", [authenticate], shiftTaskController.create);
 
