@@ -6,12 +6,7 @@ import morgan from "morgan";
 import db  from "./app/models/index.js";
 import logger from "./app/config/logger.js";
 
-// Disable foreign key checks, sync with force, then re-enable
-db.sequelize.query('SET FOREIGN_KEY_CHECKS = 0')
-  .then(() => db.sequelize.sync({ force: true }))
-  .then(() => db.sequelize.query('SET FOREIGN_KEY_CHECKS = 1'))
-  .then(() => console.log('Database synced successfully'))
-  .catch(err => console.error('Database sync error:', err));
+db.sequelize.sync();
 
 const app = express();
 
