@@ -167,6 +167,7 @@ exports.login = async (req, res) => {
             fName: user.fName,
             lName: user.lName,
             userId: user.user_id,
+            is_super_admin: user.is_super_admin,
             token: session.token,
             // refresh_token: user.refresh_token,
             // expiration_date: user.expiration_date
@@ -210,6 +211,7 @@ exports.login = async (req, res) => {
           fName: user.fName,
           lName: user.lName,
           userId: user.user_id,
+          is_super_admin: user.is_super_admin,
           token: token,
           // refresh_token: user.refresh_token,
           // expiration_date: user.expiration_date
