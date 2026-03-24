@@ -1,4 +1,4 @@
-import shiftTaskController from "../controllers/shifttask.controller.js";
+import shiftTaskController from "../controllers/shiftTask.controller.js";
 import authenticate from "../authorization/authorization.js";
 import { Router } from "express";
 const router = Router();
