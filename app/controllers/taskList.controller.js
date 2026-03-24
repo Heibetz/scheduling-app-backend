@@ -12,7 +12,7 @@ const exports = {};
  * @param {Object} req - Express request object
  * @param {Object} res - Express response object
  */
-exports.create = (req, res) => {
+exports.create = async (req, res) => {
   if (!req.body.task_name) {
     logger.warn('TaskList creation attempt with empty task_name');
     res.status(400).send({
@@ -27,6 +27,48 @@ exports.create = (req, res) => {
       message: "Area ID can not be empty!",
     });
     return;
+  }
+
+  // Manager-only check
+  try {
+    let userEmail = null;
+    if (req.get("authorization")) {
+      const token = req.get("authorization").replace("Bearer ", "");
+      const session = await db.session.findOne({ where: { token } });
+      if (session) userEmail = session.email;
+    }
+    if (!userEmail) {
+      logger.warn('TaskList creation: could not determine user from session');
+      return res.status(403).send({ message: "Forbidden: User not found in session." });
+    }
+    // Find user
+    const user = await db.user.findOne({ where: { email: userEmail } });
+    if (!user) {
+      logger.warn('TaskList creation: user not found');
+      return res.status(403).send({ message: "Forbidden: User not found." });
+    }
+    // Find all position-user records for this user
+    const posUsers = await db.positionUser.findAll({ where: { user_id: user.user_id } });
+    if (!posUsers.length) {
+      logger.warn('TaskList creation: user has no positions');
+      return res.status(403).send({ message: "Forbidden: Only managers for this area can create tasks." });
+    }
+    // Get all manager positions for this area
+    const managerPositions = await db.position.findAll({ where: { area_id: req.body.area_id, is_manager: true } });
+    if (!managerPositions.length) {
+      logger.warn('TaskList creation: no manager positions for area');
+      return res.status(403).send({ message: "Forbidden: No manager positions for this area." });
+    }
+    // Check if user holds a manager position in this area
+    const managerPositionIds = managerPositions.map(p => p.position_id);
+    const isManager = posUsers.some(pu => managerPositionIds.includes(pu.position_id));
+    if (!isManager) {
+      logger.warn(`TaskList creation forbidden: user ${userEmail} is not manager for area ${req.body.area_id}`);
+      return res.status(403).send({ message: "Forbidden: Only managers for this area can create tasks." });
+    }
+  } catch (err) {
+    logger.error(`Manager check failed: ${err.message}`);
+    return res.status(500).send({ message: "Error checking manager permissions." });
   }
 
   const taskList = {
