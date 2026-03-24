@@ -29,6 +29,7 @@ exports.create = (req, res) => {
   // Create a Schedule
   const schedule = {
     area_id: req.body.area_id,
+    schedule_name: req.body.schedule_name || null,
     start_date: req.body.start_date,
     end_date: req.body.end_date,
   };

@@ -23,6 +23,10 @@ const Schedule = SequelizeInstance.define("schedule", {
     type: Sequelize.DATE,
     allowNull: false,
   },
+  schedule_name: {
+    type: Sequelize.STRING,
+    allowNull: true,
+  },
 }, {
   timestamps: true,
   createdAt: 'created_at',
