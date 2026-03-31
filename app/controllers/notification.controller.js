@@ -81,4 +81,19 @@ exports.markAsRead = (req, res) => {
     });
 };
 
+// Delete all read notifications for a user
+exports.deleteRead = (req, res) => {
+  const userId = req.params.userId;
+
+  Notification.destroy({ where: { user_id: userId, is_read: true } })
+    .then((num) => {
+      logger.info(`Deleted ${num} read notifications for user ${userId}`);
+      res.send({ message: `${num} read notification(s) cleared.` });
+    })
+    .catch((err) => {
+      logger.error(`Error deleting read notifications for user ${userId}: ${err.message}`);
+      res.status(500).send({ message: "Error clearing read notifications." });
+    });
+};
+
 export default exports;

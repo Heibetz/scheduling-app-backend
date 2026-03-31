@@ -15,4 +15,7 @@ router.get("/:id", [authenticate], notifications.findOne);
 // Mark notification as read
 router.put("/:id/read", [authenticate], notifications.markAsRead);
 
+// Delete all read notifications for a user
+router.delete("/user/:userId/read", [authenticate], notifications.deleteRead);
+
 export default router;
