@@ -101,4 +101,66 @@ db.schedule.belongsTo(db.area, {
   foreignKey: "area_id"
 });
 
+// shift belongs to schedule
+db.schedule.hasMany(db.shift, {
+  as: "shifts",
+  foreignKey: "schedule_id",
+  onDelete: "CASCADE"
+});
+db.shift.belongsTo(db.schedule, {
+  as: "schedule",
+  foreignKey: "schedule_id"
+});
+
+// position belongs to area
+db.area.hasMany(db.position, {
+  as: "positions",
+  foreignKey: "area_id",
+  onDelete: "CASCADE"
+});
+db.position.belongsTo(db.area, {
+  as: "area",
+  foreignKey: "area_id"
+});
+
+// positionUser belongs to position and user
+db.position.hasMany(db.positionUser, {
+  as: "positionUsers",
+  foreignKey: "position_id",
+  onDelete: "CASCADE"
+});
+db.positionUser.belongsTo(db.position, {
+  as: "position",
+  foreignKey: "position_id"
+});
+db.user.hasMany(db.positionUser, {
+  as: "positionUsers",
+  foreignKey: "user_id",
+  onDelete: "CASCADE"
+});
+db.positionUser.belongsTo(db.user, {
+  as: "user",
+  foreignKey: "user_id"
+});
+
+// notification belongs to user and shift
+db.user.hasMany(db.notification, {
+  as: "notifications",
+  foreignKey: "user_id",
+  onDelete: "CASCADE"
+});
+db.notification.belongsTo(db.user, {
+  as: "user",
+  foreignKey: "user_id"
+});
+db.shift.hasMany(db.notification, {
+  as: "notifications",
+  foreignKey: "related_shift_id",
+  onDelete: "SET NULL"
+});
+db.notification.belongsTo(db.shift, {
+  as: "shift",
+  foreignKey: "related_shift_id"
+});
+
 export default db;
