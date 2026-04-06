@@ -7,6 +7,7 @@ const Schedule = db.schedule;
 const Position = db.position;
 const PositionUser = db.positionUser;
 const User = db.user;
+const Area = db.area;
 const Op = db.Sequelize.Op;
 const exports = {};
 
@@ -339,5 +340,80 @@ exports.delete = async (req, res) => {
     res.status(500).send({ message: "Could not delete Shift with id=" + id });
   }
 };
+
+/**
+ * Open shifts for student dashboard: is_open, unassigned, shift_date from today onward.
+ * Only shifts whose `position_id` is in the caller's PositionUser rows (active) — uses `IN (...)`
+ * so multiple positions / areas per user are supported.
+ * Response body: `{ shifts: Array<shift & { area_id, area_name, position_name }> }`.
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ */
+exports.findOpenForStudent = async (req, res) => {
+  const userId = parseInt(req.params.user_id, 10);
+  if (!userId || Number.isNaN(userId)) {
+    return res.status(400).send({ message: "Valid user_id is required." });
+  }
+
+  const startOfToday = new Date();
+  startOfToday.setHours(0, 0, 0, 0);
+
+  try {
+    const assignments = await PositionUser.findAll({
+      attributes: ["position_id"],
+      where: { user_id: userId, is_active: true },
+    });
+
+    const positionIds = [
+      ...new Set(
+        assignments.map((pu) => pu.position_id).filter((id) => id != null)
+      ),
+    ];
+
+    if (positionIds.length === 0) {
+      return res.send({ shifts: [] });
+    }
+
+    const rows = await Shift.findAll({
+      where: {
+        is_open: true,
+        user_id: null,
+        shift_date: { [Op.gte]: startOfToday },
+        position_id: { [Op.in]: positionIds },
+      },
+      include: [
+        {
+          model: Position,
+          as: "position",
+          required: true,
+          include: [{ model: Area, as: "area" }],
+        },
+      ],
+      order: [
+        ["shift_date", "ASC"],
+        ["start_time", "ASC"],
+      ],
+    });
+
+    const payload = rows.map((s) => {
+      const plain = s.get({ plain: true });
+      const pos = plain.position;
+      return {
+        ...plain,
+        area_id: pos?.area_id ?? null,
+        area_name: pos?.area?.area_name ?? null,
+        position_name: pos?.position_name ?? null,
+      };
+    });
+
+    res.send({ shifts: payload });
+  } catch (err) {
+    logger.error(`findOpenForStudent: ${err.message}`);
+    res.status(500).send({
+      message: err.message || "Error retrieving open shifts.",
+    });
+  }
+};
+
 
 export default exports;
