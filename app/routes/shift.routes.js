@@ -9,14 +9,17 @@ router.post("/", [authenticate], shifts.create);
 // Retrieve all Shifts
 router.get("/", [authenticate], shifts.findAll);
 
-// Retrieve a single Shift with id
-router.get("/:id", [authenticate], shifts.findOne);
+// Open shifts for student dashboard (must be before /:id)
+router.get("/open/:user_id", [authenticate], shifts.findOpenForStudent);
 
 // Retrieve all Shifts for a specific schedule
 router.get("/schedule/:schedule_id", [authenticate], shifts.findByScheduleId);
 
 // Retrieve all Shifts for a specific user
 router.get("/user/:user_id", [authenticate], shifts.findByUserId);
+
+// Retrieve a single Shift with id
+router.get("/:id", [authenticate], shifts.findOne);
 
 // Update a Shift with id
 router.put("/:id", [authenticate], shifts.update);

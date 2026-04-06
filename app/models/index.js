@@ -19,6 +19,7 @@ import TaskList from "./taskList.model.js";
 import TaskListItem from "./taskListItem.model.js";
 import TaskListItemStatus from "./taskListItemStatus.model.js";
 import ShiftTask from "./shiftTask.model.js";
+import ShiftClaim from "./shift_claim.model.js";
 
 const db = {};
 db.Sequelize = Sequelize;
@@ -37,6 +38,7 @@ db.taskList = TaskList;
 db.taskListItem = TaskListItem;
 db.taskListItemStatus = TaskListItemStatus;
 db.shiftTask = ShiftTask;
+db.shiftClaim = ShiftClaim;
 // TaskList belongs to Area (area_id)
 db.area.hasMany(db.taskList, { as: "taskLists", foreignKey: "area_id", onDelete: "CASCADE" });
 db.taskList.belongsTo(db.area, { as: "area", foreignKey: "area_id" });
@@ -112,6 +114,16 @@ db.shift.belongsTo(db.schedule, {
   foreignKey: "schedule_id"
 });
 
+db.position.hasMany(db.shift, {
+  as: "shiftsForPosition",
+  foreignKey: "position_id",
+  onDelete: "RESTRICT",
+});
+db.shift.belongsTo(db.position, {
+  as: "position",
+  foreignKey: "position_id"
+});
+
 // position belongs to area
 db.area.hasMany(db.position, {
   as: "positions",
@@ -161,6 +173,26 @@ db.shift.hasMany(db.notification, {
 db.notification.belongsTo(db.shift, {
   as: "shift",
   foreignKey: "related_shift_id"
+});
+
+// shift_claim: user requests to pick up an open shift
+db.user.hasMany(db.shiftClaim, {
+  as: "shiftClaims",
+  foreignKey: "user_id",
+  onDelete: "CASCADE",
+});
+db.shiftClaim.belongsTo(db.user, {
+  as: "user",
+  foreignKey: "user_id",
+});
+db.shift.hasMany(db.shiftClaim, {
+  as: "shiftClaims",
+  foreignKey: "shift_id",
+  onDelete: "CASCADE",
+});
+db.shiftClaim.belongsTo(db.shift, {
+  as: "shift",
+  foreignKey: "shift_id",
 });
 
 export default db;
