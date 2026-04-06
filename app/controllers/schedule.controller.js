@@ -2,6 +2,7 @@ import db from "../models/index.js";
 import logger from "../config/logger.js";
 
 const Schedule = db.schedule;
+const Shift = db.shift;
 const Area = db.area;
 const Op = db.Sequelize.Op;
 const exports = {};
@@ -184,33 +185,27 @@ exports.update = (req, res) => {
 };
 
 // Delete a Schedule with the specified id in the request
-exports.delete = (req, res) => {
+exports.delete = async (req, res) => {
   const id = req.params.id;
 
   logger.debug(`Deleting schedule with id: ${id}`);
 
-  Schedule.destroy({
-    where: { schedule_id: id },
-  })
-    .then((num) => {
-      if (num == 1) {
-        logger.info(`Schedule deleted successfully: ${id}`);
-        res.send({
-          message: "Schedule was deleted successfully!",
-        });
-      } else {
-        logger.warn(`Cannot delete schedule with id: ${id}. Maybe Schedule was not found!`);
-        res.send({
-          message: `Cannot delete Schedule with id=${id}. Maybe Schedule was not found!`,
-        });
-      }
-    })
-    .catch((err) => {
-      logger.error(`Error deleting schedule with id: ${id}. Error: ${err.message}`);
-      res.status(500).send({
-        message: "Could not delete Schedule with id=" + id,
-      });
-    });
+  try {
+    const deletedShifts = await Shift.destroy({ where: { schedule_id: id } });
+    logger.info(`Deleted ${deletedShifts} shifts for schedule: ${id}`);
+
+    const num = await Schedule.destroy({ where: { schedule_id: id } });
+    if (num == 1) {
+      logger.info(`Schedule deleted successfully: ${id}`);
+      res.send({ message: "Schedule was deleted successfully!" });
+    } else {
+      logger.warn(`Cannot delete schedule with id: ${id}. Maybe Schedule was not found!`);
+      res.send({ message: `Cannot delete Schedule with id=${id}. Maybe Schedule was not found!` });
+    }
+  } catch (err) {
+    logger.error(`Error deleting schedule with id: ${id}. Error: ${err.message}`);
+    res.status(500).send({ message: "Could not delete Schedule with id=" + id });
+  }
 };
 
 // Delete all Schedules from the database
