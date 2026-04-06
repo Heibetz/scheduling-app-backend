@@ -126,7 +126,10 @@ export async function cancelById(req, res) {
 
     await claim.destroy();
     logger.info(`Shift claim cancelled: ${shift_claim_id} user=${sessionUserId}`);
-    return res.status(204).send();
+    return res.status(200).send({
+      message: "Request cancelled",
+      shift_claim_id,
+    });
   } catch (err) {
     logger.error(`shift_claim.cancelById: ${err.message}`);
     return res.status(500).send({ message: err.message || "Could not cancel request." });
