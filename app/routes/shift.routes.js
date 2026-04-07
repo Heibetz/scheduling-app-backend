@@ -11,6 +11,10 @@ router.get("/", [authenticate], shifts.findAll);
 
 // Open shifts for student dashboard (must be before /:id)
 router.get("/open/:user_id", [authenticate], shifts.findOpenForStudent);
+router.get("/open-manager/:user_id", [authenticate], shifts.findOpenForManager);
+
+// Instant claim (no approval)
+router.post("/:id/claim", [authenticate], shifts.claimOpenShift);
 
 // Retrieve all Shifts for a specific schedule
 router.get("/schedule/:schedule_id", [authenticate], shifts.findByScheduleId);
@@ -23,6 +27,7 @@ router.get("/:id", [authenticate], shifts.findOne);
 
 // Update a Shift with id
 router.put("/:id", [authenticate], shifts.update);
+router.patch("/:id", [authenticate], shifts.update);
 
 // Delete a Shift with id
 router.delete("/:id", [authenticate], shifts.delete);
