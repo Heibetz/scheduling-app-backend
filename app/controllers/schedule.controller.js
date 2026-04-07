@@ -4,8 +4,30 @@ import logger from "../config/logger.js";
 const Schedule = db.schedule;
 const Shift = db.shift;
 const Area = db.area;
+const Notification = db.notification;
+const User = db.user;
+const Position = db.position;
 const Op = db.Sequelize.Op;
 const exports = {};
+
+// ── helpers ──────────────────────────────────────────────────
+const formatDate = (d) => {
+  if (!d) return '';
+  const dt = new Date(d);
+  const days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  return `${days[dt.getUTCDay()]}, ${months[dt.getUTCMonth()]} ${dt.getUTCDate()}`;
+};
+
+const notify = (userId, type, message, shiftId) => {
+  Notification.create({
+    user_id: userId,
+    type,
+    message,
+    related_shift_id: shiftId || null,
+    is_read: false,
+  }).catch(err => logger.error(`Notification create failed: ${err.message}`));
+};
 
 // Create and Save a new Schedule
 exports.create = (req, res) => {
@@ -226,6 +248,52 @@ exports.deleteAll = (req, res) => {
         message: err.message || "Some error occurred while removing all schedules.",
       });
     });
+};
+
+// Publish a Schedule (set live) — sends notifications to all assigned workers
+exports.publish = async (req, res) => {
+  const id = req.params.id;
+
+  logger.debug(`Publishing schedule with id: ${id}`);
+
+  try {
+    const schedule = await Schedule.findByPk(id);
+    if (!schedule) {
+      logger.warn(`Schedule not found for publish: ${id}`);
+      return res.status(404).send({ message: `Cannot find Schedule with id=${id}.` });
+    }
+
+    if (schedule.status === 'live') {
+      return res.status(400).send({ message: "Schedule is already live." });
+    }
+
+    // Set status to live
+    await Schedule.update({ status: 'live' }, { where: { schedule_id: id } });
+    logger.info(`Schedule ${id} published (set live)`);
+
+    // Find all assigned shifts in this schedule and notify workers
+    const assignedShifts = await Shift.findAll({
+      where: { schedule_id: id, user_id: { [Op.ne]: null } },
+      include: [{ model: Position, as: "position", attributes: ['position_name'] }],
+    });
+
+    for (const shift of assignedShifts) {
+      const posName = shift.position?.position_name || 'a position';
+      notify(
+        shift.user_id,
+        'shift_assigned',
+        `You have been assigned a shift on ${formatDate(shift.shift_date)} (${shift.start_time?.slice(0,5)} - ${shift.end_time?.slice(0,5)}) as ${posName}.`,
+        shift.shift_id
+      );
+    }
+
+    logger.info(`Sent ${assignedShifts.length} shift assignment notifications for schedule ${id}`);
+
+    res.send({ message: "Schedule published successfully.", notified: assignedShifts.length });
+  } catch (err) {
+    logger.error(`Error publishing schedule ${id}: ${err.message}`);
+    res.status(500).send({ message: "Error publishing Schedule with id=" + id });
+  }
 };
 
 export default exports;
