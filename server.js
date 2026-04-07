@@ -6,7 +6,7 @@ import morgan from "morgan";
 import db  from "./app/models/index.js";
 import logger from "./app/config/logger.js";
 //test
-db.sequelize.sync({alter: true});
+db.sequelize.sync();
 
 const app = express();
 
