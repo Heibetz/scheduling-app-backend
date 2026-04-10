@@ -60,6 +60,13 @@ const getUserIdFromAuthHeader = async (req) => {
   return user?.user_id ?? null;
 };
 
+/**
+ * Write an audit row to `shift_activity` (best-effort; failures are logged but do not block the request).
+ * @param {number} shiftId
+ * @param {number} userId
+ * @param {string} action
+ * @param {string|null} [note]
+ */
 const logShiftActivity = (shiftId, userId, action, note = null) => {
   if (!ShiftActivity) return;
   ShiftActivity.create({
