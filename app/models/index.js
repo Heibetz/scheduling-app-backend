@@ -20,6 +20,7 @@ import TaskListItem from "./taskListItem.model.js";
 import TaskListItemStatus from "./taskListItemStatus.model.js";
 import ShiftTask from "./shiftTask.model.js";
 import ShiftClaim from "./shift_claim.model.js";
+import ShiftActivity from "./shift_activity.model.js";
 
 const db = {};
 db.Sequelize = Sequelize;
@@ -39,6 +40,7 @@ db.taskListItem = TaskListItem;
 db.taskListItemStatus = TaskListItemStatus;
 db.shiftTask = ShiftTask;
 db.shiftClaim = ShiftClaim;
+db.shiftActivity = ShiftActivity;
 // TaskList belongs to Area (area_id)
 db.area.hasMany(db.taskList, { as: "taskLists", foreignKey: "area_id", onDelete: "CASCADE" });
 db.taskList.belongsTo(db.area, { as: "area", foreignKey: "area_id" });
