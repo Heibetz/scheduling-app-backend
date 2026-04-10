@@ -27,6 +27,11 @@ const Schedule = SequelizeInstance.define("schedule", {
     type: Sequelize.STRING,
     allowNull: true,
   },
+  status: {
+    type: Sequelize.STRING(20),
+    allowNull: false,
+    defaultValue: 'draft',
+  },
 }, {
   timestamps: true,
   createdAt: 'created_at',

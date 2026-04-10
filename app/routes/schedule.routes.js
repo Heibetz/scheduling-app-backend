@@ -15,6 +15,9 @@ router.get("/:id", [authenticate], schedules.findOne);
 // Retrieve all Schedules for a specific area
 router.get("/area/:area_id", [authenticate], schedules.findByArea);
 
+// Publish a Schedule (set live, notify workers)
+router.put("/:id/publish", [authenticate], schedules.publish);
+
 // Update a Schedule with id
 router.put("/:id", [authenticate], schedules.update);
 

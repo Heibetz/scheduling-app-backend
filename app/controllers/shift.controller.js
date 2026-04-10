@@ -262,7 +262,7 @@ exports.findByScheduleId = (req, res) => {
     });
 };
 
-// Find all Shifts for a specific user
+// Find all Shifts for a specific user (only from live schedules)
 exports.findByUserId = (req, res) => {
   const user_id = req.params.user_id;
 
@@ -272,9 +272,15 @@ exports.findByUserId = (req, res) => {
     where: {
       user_id: user_id,
     },
+    include: [{
+      model: Schedule,
+      as: "schedule",
+      where: { status: 'live' },
+      attributes: ['schedule_id', 'status'],
+    }],
   })
     .then((data) => {
-      logger.info(`Retrieved ${data.length} shifts for user ${user_id}`);
+      logger.info(`Retrieved ${data.length} shifts (live only) for user ${user_id}`);
       res.send(data);
     })
     .catch((err) => {
@@ -309,19 +315,12 @@ exports.update = async (req, res) => {
     // Fetch updated shift
     const newShift = await Shift.findByPk(id);
 
-    // ── Shift offer / cancel offer (worker) ──
-    if (sessionUserId && req.body.is_open !== undefined && newShift.user_id === sessionUserId) {
-      const oldOpen = !!oldShift.is_open;
-      const newOpen = !!newShift.is_open;
-      if (!oldOpen && newOpen) {
-        logShiftActivity(newShift.shift_id, sessionUserId, "offered");
-      } else if (oldOpen && !newOpen) {
-        logShiftActivity(newShift.shift_id, sessionUserId, "offer_cancelled");
-      }
-    }
+    // Check if schedule is live — only send worker notifications for live schedules
+    const schedule = await Schedule.findByPk(newShift.schedule_id);
+    const isLive = schedule && schedule.status === 'live';
 
-    // ── Notify on confirmation ──
-    if (req.body.status === 'confirmed' && oldShift.status !== 'confirmed' && newShift.user_id) {
+    // ── Notify on confirmation (always — this is a worker action on a live schedule) ──
+    if (isLive && req.body.status === 'confirmed' && oldShift.status !== 'confirmed' && newShift.user_id) {
       const worker = await User.findByPk(newShift.user_id);
       const workerName = worker ? `${worker.fName} ${worker.lName}` : 'A worker';
       const mgrIds = await findAreaManagerIds(newShift.schedule_id);
@@ -335,8 +334,8 @@ exports.update = async (req, res) => {
       });
     }
 
-    // ── Notify on cancellation ──
-    if (req.body.status === 'cancelled' && oldShift.status !== 'cancelled') {
+    // ── Notify on cancellation (only if live) ──
+    if (isLive && req.body.status === 'cancelled' && oldShift.status !== 'cancelled') {
       if (oldShift.user_id) {
         notify(
           oldShift.user_id,
@@ -360,11 +359,11 @@ exports.update = async (req, res) => {
       });
     }
 
-    // ── Notify on time/date change ──
+    // ── Notify on time/date change (only if live) ──
     const timeChanged = (req.body.start_time && req.body.start_time !== oldShift.start_time) ||
                         (req.body.end_time && req.body.end_time !== oldShift.end_time) ||
                         (req.body.shift_date && req.body.shift_date !== oldShift.shift_date?.toString()?.slice(0,10));
-    if (timeChanged && newShift.user_id && req.body.status !== 'cancelled') {
+    if (isLive && timeChanged && newShift.user_id && req.body.status !== 'cancelled') {
       notify(
         newShift.user_id,
         'shift_changed',
@@ -373,8 +372,8 @@ exports.update = async (req, res) => {
       );
     }
 
-    // ── Notify on reassignment ──
-    if (req.body.user_id && oldShift.user_id && req.body.user_id !== oldShift.user_id) {
+    // ── Notify on reassignment (only if live) ──
+    if (isLive && req.body.user_id && oldShift.user_id && req.body.user_id !== oldShift.user_id) {
       notify(
         oldShift.user_id,
         'shift_unassigned',
@@ -389,8 +388,8 @@ exports.update = async (req, res) => {
       );
     }
 
-    // ── Notify on new assignment (was unassigned) ──
-    if (req.body.user_id && !oldShift.user_id) {
+    // ── Notify on new assignment (was unassigned, only if live) ──
+    if (isLive && req.body.user_id && !oldShift.user_id) {
       notify(
         req.body.user_id,
         'shift_assigned',
@@ -418,14 +417,17 @@ exports.delete = async (req, res) => {
       return res.send({ message: `Cannot delete Shift with id=${id}. Maybe Shift was not found!` });
     }
 
-    // Notify assigned worker before destroying
+    // Only notify assigned worker if schedule is live
     if (shift.user_id) {
-      notify(
-        shift.user_id,
-        'shift_cancelled',
-        `Your shift on ${formatDate(shift.shift_date)} (${shift.start_time?.slice(0,5)} - ${shift.end_time?.slice(0,5)}) has been cancelled.`,
-        null
-      );
+      const schedule = await Schedule.findByPk(shift.schedule_id);
+      if (schedule && schedule.status === 'live') {
+        notify(
+          shift.user_id,
+          'shift_cancelled',
+          `Your shift on ${formatDate(shift.shift_date)} (${shift.start_time?.slice(0,5)} - ${shift.end_time?.slice(0,5)}) has been cancelled.`,
+          null
+        );
+      }
     }
 
     await Shift.destroy({ where: { shift_id: id } });
@@ -483,6 +485,12 @@ exports.findOpenForStudent = async (req, res) => {
           as: "position",
           required: true,
           include: [{ model: Area, as: "area" }],
+        },
+        {
+          model: Schedule,
+          as: "schedule",
+          where: { status: 'live' },
+          attributes: ['schedule_id', 'status'],
         },
       ],
       order: [
