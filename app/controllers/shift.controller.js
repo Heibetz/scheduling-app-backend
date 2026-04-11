@@ -1,5 +1,6 @@
 import db from "../models/index.js";
 import logger from "../config/logger.js";
+import { countPendingForUser } from "./trade_request.controller.js";
 
 const Shift = db.shift;
 const Notification = db.notification;
@@ -744,5 +745,73 @@ exports.claimOpenShift = async (req, res) => {
   }
 };
 
+/**
+ * Combined counts for worker nav badge: public open shifts for user's positions + pending private trade requests.
+ * @param {import('express').Request} req
+ * @param {import('express').Response} res
+ */
+exports.getAttentionSummary = async (req, res) => {
+  const userId = parseInt(req.params.user_id, 10);
+  if (!userId || Number.isNaN(userId)) {
+    return res.status(400).send({ message: "Valid user_id is required." });
+  }
+
+  try {
+    const sessionUserId = await getUserIdFromAuthHeader(req);
+    if (sessionUserId == null) {
+      return res.status(401).send({ message: "Unauthorized." });
+    }
+    if (Number(sessionUserId) !== userId) {
+      return res.status(403).send({ message: "Forbidden." });
+    }
+
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const assignments = await PositionUser.findAll({
+      attributes: ["position_id"],
+      where: { user_id: userId, is_active: true },
+    });
+    const positionIds = [
+      ...new Set(
+        assignments.map((pu) => pu.position_id).filter((id) => id != null)
+      ),
+    ];
+
+    let openShiftsCount = 0;
+    if (positionIds.length > 0) {
+      openShiftsCount = await Shift.count({
+        where: {
+          is_open: true,
+          shift_date: { [Op.gte]: startOfToday },
+          position_id: { [Op.in]: positionIds },
+        },
+        include: [
+          {
+            model: Schedule,
+            as: "schedule",
+            where: { status: "live" },
+            attributes: [],
+            required: true,
+          },
+        ],
+      });
+    }
+
+    const pendingTradeRequestsCount = await countPendingForUser(userId);
+    const total = openShiftsCount + pendingTradeRequestsCount;
+
+    return res.send({
+      openShiftsCount,
+      pendingTradeRequestsCount,
+      total,
+    });
+  } catch (err) {
+    logger.error(`getAttentionSummary: ${err.message}`);
+    return res.status(500).send({
+      message: err.message || "Error retrieving attention summary.",
+    });
+  }
+};
 
 export default exports;
