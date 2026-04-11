@@ -9,6 +9,9 @@ router.post("/", [authenticate], shifts.create);
 // Retrieve all Shifts
 router.get("/", [authenticate], shifts.findAll);
 
+// Worker nav badge counts (must be before /:id)
+router.get("/attention-summary/:user_id", [authenticate], shifts.getAttentionSummary);
+
 // Open shifts for student dashboard (must be before /:id)
 router.get("/open/:user_id", [authenticate], shifts.findOpenForStudent);
 router.get("/open-manager/:user_id", [authenticate], shifts.findOpenForManager);

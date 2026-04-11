@@ -15,6 +15,7 @@ import TaskListItemRoutes from "./taskListItem.routes.js";
 import TaskListItemStatusRoutes from "./taskListItemStatus.routes.js";
 import ShiftTaskRoutes from "./shiftTask.routes.js";
 import ShiftClaimRoutes from "./shift_claim.routes.js";
+import TradeRequestRoutes from "./trade_request.routes.js";
 
 const router = Router();
 
@@ -35,5 +36,6 @@ router.use("/task-list-items", TaskListItemRoutes);
 router.use("/task-list-item-statuses", TaskListItemStatusRoutes);
 router.use("/shift-tasks", ShiftTaskRoutes);
 router.use("/shift-claims", ShiftClaimRoutes);
+router.use("/trade-requests", TradeRequestRoutes);
 
 export default router;

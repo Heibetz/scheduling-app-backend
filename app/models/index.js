@@ -21,6 +21,7 @@ import TaskListItemStatus from "./taskListItemStatus.model.js";
 import ShiftTask from "./shiftTask.model.js";
 import ShiftClaim from "./shift_claim.model.js";
 import ShiftActivity from "./shift_activity.model.js";
+import TradeRequest from "./trade_request.model.js";
 
 const db = {};
 db.Sequelize = Sequelize;
@@ -41,6 +42,7 @@ db.taskListItemStatus = TaskListItemStatus;
 db.shiftTask = ShiftTask;
 db.shiftClaim = ShiftClaim;
 db.shiftActivity = ShiftActivity;
+db.tradeRequest = TradeRequest;
 // TaskList belongs to Area (area_id)
 db.area.hasMany(db.taskList, { as: "taskLists", foreignKey: "area_id", onDelete: "CASCADE" });
 db.taskList.belongsTo(db.area, { as: "area", foreignKey: "area_id" });
@@ -195,6 +197,35 @@ db.shift.hasMany(db.shiftClaim, {
 db.shiftClaim.belongsTo(db.shift, {
   as: "shift",
   foreignKey: "shift_id",
+});
+
+// trade_request: private trade offers between workers
+db.user.hasMany(db.tradeRequest, {
+  as: "tradeRequestsSent",
+  foreignKey: "from_user_id",
+  onDelete: "CASCADE",
+});
+db.user.hasMany(db.tradeRequest, {
+  as: "tradeRequestsReceived",
+  foreignKey: "to_user_id",
+  onDelete: "CASCADE",
+});
+db.tradeRequest.belongsTo(db.user, {
+  as: "fromUser",
+  foreignKey: "from_user_id",
+});
+db.tradeRequest.belongsTo(db.user, {
+  as: "toUser",
+  foreignKey: "to_user_id",
+});
+db.shift.hasMany(db.tradeRequest, {
+  as: "tradeRequests",
+  foreignKey: "offered_shift_id",
+  onDelete: "CASCADE",
+});
+db.tradeRequest.belongsTo(db.shift, {
+  as: "offeredShift",
+  foreignKey: "offered_shift_id",
 });
 
 export default db;
