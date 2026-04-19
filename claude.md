@@ -173,6 +173,11 @@
 - **TaskList → ShiftTask**: one-to-many (CASCADE)
 - **Position** links to Area via `area_id`
 - **PositionUser** links User to Position (many-to-many join table)
+- **Area → ScheduleTemplate**: one-to-many (CASCADE)
+- **ScheduleTemplate → TemplateShift**: one-to-many (CASCADE)
+- **TemplateShift → TemplateShiftTask**: one-to-many (CASCADE)
+- **Position → TemplateShift**: one-to-many (RESTRICT)
+- **TaskList → TemplateShiftTask**: one-to-many (CASCADE)
 
 ## Project Structure
 ```
@@ -183,6 +188,67 @@ app/
   routes/       - Express route definitions per model
 server.js       - Entry point
 ```
+
+### schedule_template (table: `schedule_template`)
+| Column | Type | Notes |
+|---|---|---|
+| template_id | INTEGER | PK, auto-increment |
+| area_id | INTEGER | required, FK → areas.area_id (CASCADE) |
+| template_name | STRING(255) | required |
+| created_at | DATE | auto |
+| updated_at | DATE | auto |
+
+### template_shift (table: `template_shift`)
+| Column | Type | Notes |
+|---|---|---|
+| template_shift_id | INTEGER | PK, auto-increment |
+| template_id | INTEGER | required, FK → schedule_template.template_id (CASCADE) |
+| day_of_week | INTEGER | required, 0=Sun … 6=Sat |
+| position_id | INTEGER | required, FK → Position.position_id (RESTRICT) |
+| start_time | TIME | required |
+| end_time | TIME | required |
+| created_at | DATE | auto |
+| updated_at | DATE | auto |
+
+### template_shift_task (table: `template_shift_task`)
+| Column | Type | Notes |
+|---|---|---|
+| template_shift_task_id | INTEGER | PK, auto-increment |
+| template_shift_id | INTEGER | required, FK → template_shift.template_shift_id (CASCADE) |
+| task_id | INTEGER | required, FK → TaskList.task_id (CASCADE) |
+| created_at | DATE | auto |
+| updated_at | DATE | auto |
+| **Unique constraint**: (template_shift_id, task_id) |
+
+---
+
+## Schedule Template API
+
+Base path: `/schedule-templates`
+
+| Method | Path | Description |
+|---|---|---|
+| POST | `/` | Create a template (`{ area_id, template_name }`) |
+| GET | `/` | List all templates (optional `?area_id=`) |
+| GET | `/:id` | Get template with shifts & tasks |
+| PUT | `/:id` | Update template name |
+| DELETE | `/:id` | Delete template (cascades shifts & tasks) |
+| POST | `/:id/shifts` | Add a shift to template (`{ day_of_week, position_id, start_time, end_time }`) |
+| PUT | `/:id/shifts/:shiftId` | Update a template shift |
+| DELETE | `/:id/shifts/:shiftId` | Remove a template shift |
+| POST | `/:id/shifts/:shiftId/tasks` | Assign a task list to template shift (`{ task_id }`) |
+| DELETE | `/:id/shifts/:shiftId/tasks/:taskId` | Remove task from template shift |
+| POST | `/:id/apply` | Apply template → creates a draft schedule with shifts + task assignments (`{ start_date, end_date, schedule_name, created_by }`) |
+
+### Apply Logic
+1. Loads the template with all shifts and their task assignments.
+2. Creates a new `Schedule` in **draft** status for the template's area.
+3. For each day in `[start_date, end_date]`, matches `day_of_week` from template shifts.
+4. Creates real `Shift` records (unassigned, `is_open = true`).
+5. Copies `TemplateShiftTask` entries into `ShiftTask` for each created shift.
+6. Entire operation runs in a database transaction (all-or-nothing).
+
+---
 
 ## Useful SQL
 ```sql

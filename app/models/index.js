@@ -22,6 +22,9 @@ import ShiftTask from "./shiftTask.model.js";
 import ShiftClaim from "./shift_claim.model.js";
 import ShiftActivity from "./shift_activity.model.js";
 import TradeRequest from "./trade_request.model.js";
+import ScheduleTemplate from "./scheduleTemplate.model.js";
+import TemplateShift from "./templateShift.model.js";
+import TemplateShiftTask from "./templateShiftTask.model.js";
 
 const db = {};
 db.Sequelize = Sequelize;
@@ -43,6 +46,9 @@ db.shiftTask = ShiftTask;
 db.shiftClaim = ShiftClaim;
 db.shiftActivity = ShiftActivity;
 db.tradeRequest = TradeRequest;
+db.scheduleTemplate = ScheduleTemplate;
+db.templateShift = TemplateShift;
+db.templateShiftTask = TemplateShiftTask;
 // TaskList belongs to Area (area_id)
 db.area.hasMany(db.taskList, { as: "taskLists", foreignKey: "area_id", onDelete: "CASCADE" });
 db.taskList.belongsTo(db.area, { as: "area", foreignKey: "area_id" });
@@ -226,6 +232,66 @@ db.shift.hasMany(db.tradeRequest, {
 db.tradeRequest.belongsTo(db.shift, {
   as: "offeredShift",
   foreignKey: "offered_shift_id",
+});
+
+// ScheduleTemplate belongs to Area
+db.area.hasMany(db.scheduleTemplate, {
+  as: "scheduleTemplates",
+  foreignKey: "area_id",
+  onDelete: "CASCADE",
+});
+db.scheduleTemplate.belongsTo(db.area, {
+  as: "area",
+  foreignKey: "area_id",
+});
+
+// TemplateShift belongs to ScheduleTemplate and Position
+db.scheduleTemplate.hasMany(db.templateShift, {
+  as: "templateShifts",
+  foreignKey: "template_id",
+  onDelete: "CASCADE",
+});
+db.templateShift.belongsTo(db.scheduleTemplate, {
+  as: "scheduleTemplate",
+  foreignKey: "template_id",
+});
+db.position.hasMany(db.templateShift, {
+  as: "positionTemplateShifts",
+  foreignKey: "position_id",
+  onDelete: "RESTRICT",
+});
+db.templateShift.belongsTo(db.position, {
+  as: "position",
+  foreignKey: "position_id",
+});
+db.user.hasMany(db.templateShift, {
+  as: "userTemplateShifts",
+  foreignKey: "user_id",
+  onDelete: "SET NULL",
+});
+db.templateShift.belongsTo(db.user, {
+  as: "user",
+  foreignKey: "user_id",
+});
+
+// TemplateShiftTask belongs to TemplateShift and TaskList
+db.templateShift.hasMany(db.templateShiftTask, {
+  as: "templateShiftTasks",
+  foreignKey: "template_shift_id",
+  onDelete: "CASCADE",
+});
+db.templateShiftTask.belongsTo(db.templateShift, {
+  as: "templateShift",
+  foreignKey: "template_shift_id",
+});
+db.taskList.hasMany(db.templateShiftTask, {
+  as: "templateShiftTasks",
+  foreignKey: "task_id",
+  onDelete: "CASCADE",
+});
+db.templateShiftTask.belongsTo(db.taskList, {
+  as: "taskList",
+  foreignKey: "task_id",
 });
 
 export default db;
