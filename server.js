@@ -6,17 +6,7 @@ import morgan from "morgan";
 import db  from "./app/models/index.js";
 import logger from "./app/config/logger.js";
 
-db.sequelize.sync().then(async () => {
-  try {
-    await db.sequelize.query(
-      "ALTER TABLE `schedule_template` ADD COLUMN `duration_weeks` INT NOT NULL DEFAULT 1",
-      { raw: true }
-    );
-    logger.info("Added duration_weeks column to schedule_template");
-  } catch (e) {
-    if (e.original?.code !== 'ER_DUP_FIELDNAME') throw e;
-  }
-});
+db.sequelize.sync();
 
 const app = express();
 
