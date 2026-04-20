@@ -15,6 +15,11 @@ const ScheduleTemplate = SequelizeInstance.define("scheduleTemplate", {
     type: Sequelize.STRING(255),
     allowNull: false,
   },
+  duration_weeks: {
+    type: Sequelize.INTEGER,
+    allowNull: false,
+    defaultValue: 1,
+  },
 }, {
   timestamps: true,
   createdAt: "created_at",

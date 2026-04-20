@@ -14,7 +14,7 @@ const TemplateShift = SequelizeInstance.define("templateShift", {
   day_of_week: {
     type: Sequelize.INTEGER,
     allowNull: false,
-    validate: { min: 0, max: 6 },
+    validate: { min: 0, max: 20 },
   },
   position_id: {
     type: Sequelize.INTEGER,

@@ -24,6 +24,7 @@ exports.create = (req, res) => {
   ScheduleTemplate.create({
     area_id: req.body.area_id,
     template_name: req.body.template_name,
+    duration_weeks: req.body.duration_weeks || 1,
   })
     .then((data) => {
       logger.info(`ScheduleTemplate created: ${data.template_id}`);
@@ -132,8 +133,8 @@ exports.createShift = (req, res) => {
   if (day_of_week == null || !position_id || !start_time || !end_time) {
     return res.status(400).send({ message: "day_of_week, position_id, start_time, end_time are required!" });
   }
-  if (day_of_week < 0 || day_of_week > 6) {
-    return res.status(400).send({ message: "day_of_week must be 0 (Sun) – 6 (Sat)." });
+  if (day_of_week < 0 || day_of_week > 20) {
+    return res.status(400).send({ message: "day_of_week must be 0–20 (up to 3 weeks)." });
   }
 
   TemplateShift.create({ template_id: templateId, day_of_week, position_id, start_time, end_time, user_id: user_id || null })
@@ -261,9 +262,16 @@ exports.apply = async (req, res) => {
     logger.info(`Apply: template has ${template.templateShifts.length} shifts, date range has ${dates.length} days`);
 
     for (const ts of template.templateShifts) {
-      // Find all dates matching this day_of_week
-      const matchingDates = dates.filter((d) => d.getDay() === ts.day_of_week);
-      logger.info(`Apply: template shift day_of_week=${ts.day_of_week}, matched ${matchingDates.length} dates`);
+      const weekNum = Math.floor(ts.day_of_week / 7);
+      const actualDay = ts.day_of_week % 7; // JS getDay(): 0=Sun,1=Mon,...,6=Sat
+
+      // Find dates in the correct week of the range that match the day-of-week
+      const weekStart = weekNum * 7;
+      const weekEnd = weekStart + 7;
+      const weekDates = dates.slice(weekStart, Math.min(weekEnd, dates.length));
+      const matchingDates = weekDates.filter((d) => d.getDay() === actualDay);
+
+      logger.info(`Apply: shift day_of_week=${ts.day_of_week} (week ${weekNum}, day ${actualDay}), matched ${matchingDates.length} dates`);
 
       for (const date of matchingDates) {
         const yyyy = date.getFullYear();
